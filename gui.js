@@ -3399,6 +3399,15 @@ var CGUI = function()
     reader.readAsDataURL(file);
   };
 
+  var onLeave = function() {
+    // Ask the user if they really want to leave the page,
+    // in case they haven't saved.
+    // NOTE: Most browsers ignore the returned message and
+    // use a generic one.
+    // TODO: implement autosave
+    return 'Are you sure you want to leave?'
+  };
+
   var activateMasterEvents = function ()
   {
     // Set up the master mouse event handlers
@@ -3416,17 +3425,23 @@ var CGUI = function()
     dropElement.addEventListener("dragenter", function dragenter(e) { e.stopPropagation(); e.preventDefault(); }, false);
     dropElement.addEventListener("dragover", function dragenter(e) { e.stopPropagation(); e.preventDefault(); }, false);
     dropElement.addEventListener("drop", onFileDrop, false);
+
+    // Set up the "oops I didn't mean to close that tab" handler
+    window.onbeforeunload = onLeave;
   };
 
   var deactivateMasterEvents = function ()
   {
-    // Set up the master mouse event handlers
+    // Clear the master mouse event handlers
     document.onmousedown = function () { return true; };
     document.onmousemove = null;
     document.onmouseup = null;
 
-    // Set up the master key event handler
+    // Clear the master key event handler
     document.onkeydown = null;
+
+    // Clear beforeunload handler
+    window.onbeforeunload = null;
   };
 
   var buildSequencerTable = function () {
