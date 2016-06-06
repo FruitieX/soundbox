@@ -3094,7 +3094,12 @@ var CGUI = function()
   };
 
   var keyDown = function (e) {
-    if (!e) var e = window.event;
+    if (!e) e = window.event;
+
+    // Don't eat browser shortcuts
+    if (e.ctrlKey || e.altKey || e.metaKey) {
+      return true;
+    }
 
     // Check if we're editing BPM / RPP
     var editingBpmRpp =
