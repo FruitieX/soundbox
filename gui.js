@@ -232,6 +232,18 @@ var CGUI = function()
       mFxCopyBuffer = [],
       mInstrCopyBuffer = [];
 
+  var mHaveSavedRange = false,
+      mSavedPatternCol = 0,
+      mSavedPatternRow = 0,
+      mSavedPatternCol2 = 0,
+      mSavedPatternRow2 = 0,
+      mSavedSeqCol = 0,
+      mSavedSeqRow = 0,
+      mSavedSeqCol2 = 0,
+      mSavedSeqRow2 = 0,
+      mSavedFxTrackRow = 0,
+      mSavedFxTrackRow2 = 0;
+
   // Parsed URL data
   var mBaseURL;
   var mGETParams;
@@ -1445,6 +1457,32 @@ var CGUI = function()
     updateFxTrack(false, true);
   };
 
+  var saveSelection = function() {
+      mSavedPatternCol = mPatternCol;
+      mSavedPatternRow = mPatternRow;
+      mSavedPatternCol2 = mPatternCol2;
+      mSavedPatternRow2 = mPatternRow2;
+      mSavedSeqCol = mSeqCol;
+      mSavedSeqRow = mSeqRow;
+      mSavedSeqCol2 = mSeqCol2;
+      mSavedSeqRow2 = mSeqRow2;
+      mSavedFxTrackRow = mFxTrackRow;
+      mSavedFxTrackRow2 = mFxTrackRow2;
+      mHaveSavedRange = true;
+  };
+
+  var restoreSelection = function() {
+    if (mHaveSavedRange) {
+      setSelectedPatternCell(mSavedPatternCol, mSavedPatternRow);
+      setSelectedPatternCell2(mSavedPatternCol2, mSavedPatternRow2);
+      setSelectedSequencerCell(mSavedSeqCol, mSavedSeqRow);
+      setSelectedSequencerCell2(mSavedSeqCol2, mSavedSeqRow2);
+      setSelectedFxTrackRow(mSavedFxTrackRow);
+      setSelectedFxTrackRow2(mSavedFxTrackRow2);
+      mHaveSavedRange = false;
+    }
+  };
+
   var playNote = function (n) {
     // Calculate note number and trigger a new note in the jammer.
     var note = n + 87;
@@ -1998,6 +2036,7 @@ var CGUI = function()
 
   var stopAudio = function () {
     stopFollower();
+    restoreSelection();
     if (mAudio) {
       mAudio.pause();
       mAudioTimer.reset();
@@ -2158,15 +2197,17 @@ var CGUI = function()
     // Are we past the play range (i.e. stop the follower?)
     if (mAudio.ended || (mAudio.duration && ((mAudio.duration - t) < 0.1))) {
       stopFollower();
-
-      // Reset pattern position
-      mPatternRow = 0;
-      mPatternRow2 = 0;
-      updatePattern();
-      mFxTrackRow = 0;
-      mFxTrackRow2 = 0;
-      updateFxTrack();
-
+      if (mHaveSavedRange) {
+        restoreSelection();
+      } else {
+        // Reset pattern position
+        mPatternRow = 0;
+        mPatternRow2 = 0;
+        updatePattern();
+        mFxTrackRow = 0;
+        mFxTrackRow2 = 0;
+        updateFxTrack();
+      }
       return;
     }
 
@@ -2264,6 +2305,9 @@ var CGUI = function()
     // Stop the currently playing audio
     stopAudio();
 
+    // Save current selection
+    saveSelection();
+
     // Update song ranges
     updateSongRanges();
 
@@ -2310,6 +2354,9 @@ var CGUI = function()
 
     // Stop the currently playing audio
     stopAudio();
+
+    // Save current selection
+    saveSelection();
 
     // Update song ranges
     updateSongRanges();
