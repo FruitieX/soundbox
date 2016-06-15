@@ -3356,6 +3356,14 @@ var CGUI = function()
         }
         break;
 
+      case 220: // BACKSLASH
+        if (mEditMode != EDIT_NONE)
+        {
+          stopPlaying(e);
+          return false;
+        }
+        break;
+
       case 8:   // BACKSPACE (Mac delete)
       case 46:  // DELETE
         if (mEditMode == EDIT_SEQUENCE)
