@@ -253,8 +253,8 @@ var CGUI = function()
   var mAudio = null;
   var mAudioTimer = new CAudioTimer();
   var mAudioStartTime = 0;
-  //var mPlayer = new soundbox.MusicGenerator();
-  var mPlayer = null;
+  var mPlayer = new soundbox.MusicGenerator();
+  mPlayer.connect(soundbox.audioCtx.destination);
   var mPlayGfxVUImg = new Image();
   var mPlayGfxLedOffImg = new Image();
   var mPlayGfxLedOnImg = new Image();
@@ -2013,10 +2013,9 @@ var CGUI = function()
     var d1 = new Date();
 
     // Generate audio data in a worker.
-    mPlayer = new soundbox.MusicGenerator(mSong);
-    mPlayer.connect(soundbox.audioCtx.destination);
+    mPlayer.play(mSong, soundbox.audioCtx.currentTime);
     mAudioStartTime = soundbox.audioCtx.currentTime;
-    mPlayer.start(soundbox.audioCtx.currentTime);
+    //mPlayer.start(soundbox.audioCtx.currentTime);
     doneFun();
     /*
     mPlayer.generate(mSong, opts, function (progress) {
@@ -2316,7 +2315,7 @@ var CGUI = function()
     e.preventDefault();
 
     // Stop the currently playing audio
-    stopAudio();
+    //stopAudio();
 
     // Save current selection
     saveSelection();
