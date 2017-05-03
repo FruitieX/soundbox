@@ -252,7 +252,9 @@ var CGUI = function()
   var mSong = {};
   var mAudio = null;
   var mAudioTimer = new CAudioTimer();
-  var mPlayer = new CPlayer();
+  var mAudioStartTime = 0;
+  //var mPlayer = new soundbox.MusicGenerator();
+  var mPlayer = null;
   var mPlayGfxVUImg = new Image();
   var mPlayGfxLedOffImg = new Image();
   var mPlayGfxLedOnImg = new Image();
@@ -398,7 +400,7 @@ var CGUI = function()
 
     // Row length
     song.rowLen = calcSamplesPerRow(120);
-  
+
     // Last pattern to play
     song.endPattern = 2;
 
@@ -928,7 +930,7 @@ var CGUI = function()
 
       song.songData[i] = instr;
     }
-  
+
     // Last pattern to play
     song.endPattern = bin.getUBYTE() + 2;
 
@@ -955,7 +957,7 @@ var CGUI = function()
   var songToJS = function (song) {
     var i, j, k;
     var jsData = "";
-  
+
     jsData += "    // This music has been exported by SoundBox. You can use it with\n";
     jsData += "    // http://sb.bitsnbites.eu/player-small.js in your own product.\n\n";
 
@@ -1063,7 +1065,7 @@ var CGUI = function()
         jsData += ",";
       jsData += "\n";
     }
-    
+
     jsData += "      ],\n";
     jsData += "      rowLen: " + song.rowLen + ",   // In sample lengths\n";
     jsData += "      patternLen: " + song.patternLen + ",  // Rows per pattern\n";
@@ -2005,13 +2007,18 @@ var CGUI = function()
   var generateAudio = function (doneFun, opts)
   {
     // Show dialog
-    showProgressDialog("Generating sound...");
+    //showProgressDialog("Generating sound...");
 
     // Start time measurement
     var d1 = new Date();
 
     // Generate audio data in a worker.
-    mPlayer = new CPlayer();
+    mPlayer = new soundbox.MusicGenerator(mSong);
+    mPlayer.connect(soundbox.audioCtx.destination);
+    mAudioStartTime = soundbox.audioCtx.currentTime;
+    mPlayer.start(soundbox.audioCtx.currentTime);
+    doneFun();
+    /*
     mPlayer.generate(mSong, opts, function (progress) {
       // Update progress bar
       var o = document.getElementById("progressBar");
@@ -2032,11 +2039,15 @@ var CGUI = function()
         doneFun(wave);
       }
     });
+    */
   };
 
   var stopAudio = function () {
     stopFollower();
     restoreSelection();
+    if (mPlayer) {
+      mPlayer.stop();
+    }
     if (mAudio) {
       mAudio.pause();
       mAudioTimer.reset();
@@ -2092,6 +2103,7 @@ var CGUI = function()
 
       // Calculate singal powers
       var pl = 0, pr = 0;
+      /*
       if (mFollowerActive && t >= 0)
       {
         // Get the waveform
@@ -2184,6 +2196,7 @@ var CGUI = function()
           }
         }
       }
+    */
     }
   };
 
@@ -2192,7 +2205,7 @@ var CGUI = function()
       return;
 
     // Get current time
-    var t = mAudioTimer.currentTime();
+    var t = soundbox.audioCtx.currentTime - mAudioStartTime;
 
     // Are we past the play range (i.e. stop the follower?)
     if (mAudio.ended || (mAudio.duration && ((mAudio.duration - t) < 0.1))) {
@@ -2333,11 +2346,11 @@ var CGUI = function()
 
         // Load the data into the audio element (it will start playing as soon
         // as the data has been loaded)
-        mAudio.src = URL.createObjectURL(new Blob([wave], {type: "audio/wav"}));
+        //mAudio.src = URL.createObjectURL(new Blob([wave], {type: "audio/wav"}));
 
         // Hack
-        mAudioTimer.reset();
-        mAudio.play();
+        //mAudioTimer.reset();
+        //mAudio.play();
       }
       catch (err)
       {
@@ -3828,14 +3841,14 @@ var CGUI = function()
     document.getElementById("instrPaste").onmousedown = instrPasteMouseDown;
 
     // Initialize the MIDI handler
-    initMIDI();
+    //initMIDI();
 
     // Set up master event handlers
     activateMasterEvents();
 
     // Show the about dialog (if no song was loaded)
-    if (!songData)
-      showAboutDialog();
+    //if (!songData)
+      //showAboutDialog();
 
     // Start the jammer
     mJammer.start();
@@ -3865,4 +3878,3 @@ function gui_init()
     alert("Unexpected error: " + err.message);
   }
 }
-
