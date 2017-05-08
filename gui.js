@@ -2012,8 +2012,24 @@ var CGUI = function()
     // Start time measurement
     var d1 = new Date();
 
+    let song = mSong;
+
+    if (opts) {
+      // awesome way of cloning object
+      song = JSON.parse(JSON.stringify(song));
+
+      // select wanted instruments
+      song.songData = song.songData.slice(opts.firstCol, opts.lastCol + 1);
+
+      // loop over instruments
+      song.songData.forEach((instrument, tIndex) => {
+        // select wanted patterns
+        instrument.p = instrument.p.slice(opts.firstRow, opts.lastRow + 1);
+      });
+    }
+
     // Generate audio data in a worker.
-    mPlayer.play(mSong, soundbox.audioCtx.currentTime);
+    mPlayer.play(song, soundbox.audioCtx.currentTime);
     mAudioStartTime = soundbox.audioCtx.currentTime;
     //mPlayer.start(soundbox.audioCtx.currentTime);
     doneFun();
@@ -2048,7 +2064,7 @@ var CGUI = function()
       mPlayer.stop();
     }
     if (mAudio) {
-      mAudio.pause();
+      //mAudio.pause();
       mAudioTimer.reset();
     }
   };
