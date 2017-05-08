@@ -2401,7 +2401,7 @@ var CGUI = function()
 
         // Load the data into the audio element (it will start playing as soon
         // as the data has been loaded)
-        mAudio.src = URL.createObjectURL(new Blob([wave], {type: "audio/wav"}));
+        //mAudio.src = URL.createObjectURL(new Blob([wave], {type: "audio/wav"}));
 
         // Hack
         mAudio.play();
