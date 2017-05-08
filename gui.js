@@ -2248,8 +2248,11 @@ var CGUI = function()
     var newSeqPos = (seqPos != mSeqRow);
     var newPatPos = newSeqPos || (patPos != mPatternRow);
 
-    // Update the sequencer
-    if (newSeqPos) {
+    if (seqPos > mFollowerLastRow) {
+      // Stepped past last row
+      stopAudio();
+    } else if (newSeqPos) {
+      // Update the sequencer
       if (seqPos >= 0) {
         mSeqRow = seqPos;
         mSeqRow2 = seqPos;
@@ -3377,9 +3380,12 @@ var CGUI = function()
         break;
 
       case 32: // SPACE
-        if (mEditMode != EDIT_NONE)
+        if (mEditMode != EDIT_NONE && !mFollowerActive)
         {
           playRange(e);
+          return false;
+        } else if (mFollowerActive) {
+          stopPlaying(e);
           return false;
         }
         break;
