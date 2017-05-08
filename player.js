@@ -319,11 +319,11 @@ soundbox.MusicGenerator.prototype.play = function(song, when = 0) {
 soundbox.MusicGenerator.prototype.stop = function() {
   this.tracks.forEach(track =>
     track.forEach(column => {
-      column.osc1.frequency.cancelScheduledValues(audioCtx.currentTime);
-      column.osc2.frequency.cancelScheduledValues(audioCtx.currentTime);
-      column.osc1env.gain.cancelScheduledValues(audioCtx.currentTime);
-      column.osc2env.gain.cancelScheduledValues(audioCtx.currentTime);
-      column.osc3env.gain.cancelScheduledValues(audioCtx.currentTime);
+      column.osc1.frequency.cancelScheduledValues(0);
+      column.osc2.frequency.cancelScheduledValues(0);
+      column.osc1env.gain.cancelScheduledValues(0);
+      column.osc2env.gain.cancelScheduledValues(0);
+      column.osc3env.gain.cancelScheduledValues(0);
       column.osc1env.gain.value = 0;
       column.osc2env.gain.value = 0;
       column.osc3env.gain.value = 0;

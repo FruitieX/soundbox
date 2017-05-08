@@ -2331,7 +2331,7 @@ var CGUI = function()
     e.preventDefault();
 
     // Stop the currently playing audio
-    //stopAudio();
+    stopAudio();
 
     // Save current selection
     saveSelection();
