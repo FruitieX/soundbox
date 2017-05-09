@@ -236,7 +236,7 @@ let setNotes = (params, patterns, patternOrder, rowLen, patternLen, when, column
     //let startTime = t + rowLen * index;
     let startTime = when + rowLen * (notes.length - index - 1);
     let osc1freq = 440 * Math.pow(2, (note + params[2] - 272) / 12);
-    let osc2freq = 440 * Math.pow(2, (note + params[6] - 272 + 0.008 * params[7]) / 12);
+    let osc2freq = 440 * Math.pow(2, (note + params[6] - 272 + 0.0125 * params[7]) / 12);
     column.osc1.frequency.setValueAtTime(osc1freq, startTime);
     column.osc2.frequency.setValueAtTime(osc2freq, startTime);
 
