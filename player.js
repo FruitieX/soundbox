@@ -144,7 +144,7 @@ let setParams = (params, rowLen, column) => {
       fxLFO = params[18],
       fxFilter = params[19],
       fxFreq = params[20] * 20,
-      q = 1 - params[21] / 255,
+      q = Math.pow(2, params[21] / 63),
       dist = params[22] * 1e-5,
       drive = params[23] / 32,
       panAmt = params[24] / 255,
