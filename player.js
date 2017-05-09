@@ -12,6 +12,10 @@ const waveforms = [
   "triangle",
 ];
 
+const bound = (min, value, max) => {
+  return Math.max(min, Math.min(value, max));
+};
+
 const createNoiseOsc = () => {
   let osc = audioCtx.createScriptProcessor(2048, 1, 1);
 
@@ -255,42 +259,65 @@ let setNotes = (params, patterns, patternOrder, rowLen, patternLen, when, column
     column.osc1.frequency.setValueAtTime(osc1freq, startTime);
     column.osc2.frequency.setValueAtTime(osc2freq, startTime);
 
+    // Envelope modulated frequency on oscillator 1
     if (o1xenv) {
       column.osc1.frequency.setValueAtTime(0, startTime);
       column.osc1.frequency.linearRampToValueAtTime(osc1freq, startTime + attack);
-      // sustain
-      column.osc1.frequency.setValueAtTime(osc1freq, startTime + attack + sustain);
-      // release
-      column.osc1.frequency.linearRampToValueAtTime(0, startTime + attack + sustain + release);
+
+      if (!nextNote || nextNote > startTime + attack + sustain) {
+        // sustain
+        column.osc1.frequency.setValueAtTime(osc1freq, startTime + attack + sustain);
+        // release
+        column.osc1.frequency.linearRampToValueAtTime(0, startTime + attack + sustain + release);
+      }
     }
 
+    // Envelope modulated frequency on oscillator 2
     if (o2xenv) {
       column.osc2.frequency.setValueAtTime(0, startTime);
       column.osc2.frequency.linearRampToValueAtTime(osc2freq, startTime + attack);
-      // sustain
-      column.osc2.frequency.setValueAtTime(osc2freq, startTime + attack + sustain);
-      // release
-      column.osc2.frequency.linearRampToValueAtTime(0, startTime + attack + sustain + release);
+
+      if (!nextNote || nextNote > startTime + attack + sustain) {
+        // sustain
+        column.osc2.frequency.setValueAtTime(osc2freq, startTime + attack + sustain);
+        // release
+        column.osc2.frequency.linearRampToValueAtTime(0, startTime + attack + sustain + release);
+      }
+    }
+
+    let a = startTime + attack;
+    let s = startTime + attack + sustain;
+    let r = startTime + attack + sustain + release;
+
+    // small delta required so clamped events don't overlap
+    let d = 0.001;
+
+    // don't overlap frequent events
+    if (nextNote) {
+      a = Math.min(nextNote - d, a);
+      s = Math.min(nextNote - d, s);
+      r = Math.min(nextNote - d, r);
     }
 
     // attack
     column.osc1env.gain.setValueAtTime(0, startTime);
     column.osc2env.gain.setValueAtTime(0, startTime);
     column.osc3env.gain.setValueAtTime(0, startTime);
-    column.osc1env.gain.linearRampToValueAtTime(o1vol, startTime + attack);
-    column.osc2env.gain.linearRampToValueAtTime(o2vol, startTime + attack);
-    column.osc3env.gain.linearRampToValueAtTime(noiseVol, startTime + attack);
-    // sustain
+    column.osc1env.gain.linearRampToValueAtTime(o1vol, a);
+    column.osc2env.gain.linearRampToValueAtTime(o2vol, a);
+    column.osc3env.gain.linearRampToValueAtTime(noiseVol, a);
+
     if (!nextNote || nextNote > startTime + attack + sustain) {
-        column.osc1env.gain.setValueAtTime(o1vol, startTime + attack + sustain);
-        column.osc2env.gain.setValueAtTime(o2vol, startTime + attack + sustain);
-        column.osc3env.gain.setValueAtTime(noiseVol, startTime + attack + sustain);
-    }
-    // release
-    if (!nextNote || nextNote > startTime + attack + sustain + release) {
-        column.osc1env.gain.linearRampToValueAtTime(0, startTime + attack + sustain + release);
-        column.osc2env.gain.linearRampToValueAtTime(0, startTime + attack + sustain + release);
-        column.osc3env.gain.linearRampToValueAtTime(0, startTime + attack + sustain + release);
+        // sustain
+        column.osc1env.gain.setValueAtTime(o1vol, s);
+        column.osc2env.gain.setValueAtTime(o2vol, s);
+        column.osc3env.gain.setValueAtTime(noiseVol, s);
+
+        // release
+        let releaseVal = bound(0, 1 - (r - startTime) / (attack + sustain + release), 1);
+        column.osc1env.gain.linearRampToValueAtTime(o1vol * releaseVal, r);
+        column.osc2env.gain.linearRampToValueAtTime(o2vol * releaseVal, r);
+        column.osc3env.gain.linearRampToValueAtTime(noiseVol * releaseVal, r);
     }
 
     nextNote = startTime;
