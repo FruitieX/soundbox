@@ -175,7 +175,6 @@ let setParams = (params, rowLen, column) => {
     column.delay.delayTime.value = dly;
 
     // filter
-    console.log(q);
     column.biquadFilter.type = filters[fxFilter - 1];
     column.biquadFilter.frequency.value = fxFreq;
     column.biquadFilter.Q.value = q;
