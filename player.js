@@ -52,6 +52,11 @@ let initCol = () => {
   let osc2 = audioCtx.createOscillator();
   let osc3 = createNoiseOsc();
 
+  // pan
+  let panNode = audioCtx.createStereoPanner();
+  let panLFO = audioCtx.createOscillator();
+  let panAmt = audioCtx.createGain();
+
   // delay
   let delayGain = audioCtx.createGain();
   let delay = audioCtx.createDelay();
@@ -74,9 +79,13 @@ let initCol = () => {
   delayGain.connect(out);
   delay.connect(delayGain);
 
+  panNode.connect(out);
+  panLFO.connect(panAmt);
+  panAmt.connect(panNode.pan);
+
   preFilter.connect(biquadFilter);
   biquadFilter.connect(delay);
-  biquadFilter.connect(out);
+  biquadFilter.connect(panNode);
 
   lfo.connect(modulationGain);
   modulationGain.connect(biquadFilter.frequency);
@@ -92,6 +101,9 @@ let initCol = () => {
     osc3,
     delayGain,
     delay,
+    panNode,
+    panLFO,
+    panAmt,
     biquadFilter,
     lfo,
     modulationGain,
@@ -131,8 +143,8 @@ let setParams = (params, rowLen, column) => {
       q = 1 - params[21] / 255,
       dist = params[22] * 1e-5,
       drive = params[23] / 32,
-      panAmt = params[24] / 512,
-      panFreq = 6.283184 * Math.pow(2, params[25] - 9) / rowLen,
+      panAmt = params[24] / 255,
+      panFreq = 3.14 * Math.pow(2, params[25] - 9) / rowLen,
       dlyAmt = params[26] / 255,
       dly = params[27] * rowLen;
 
@@ -147,6 +159,11 @@ let setParams = (params, rowLen, column) => {
 
     column.osc1.type = osc1t;
     column.osc2.type = osc2t;
+
+    // pan
+    column.panAmt.gain.value = panAmt;
+    // TODO: correct value?
+    column.panLFO.frequency.value = panFreq;
 
     // delay
     column.delayGain.gain.value = dlyAmt;
@@ -165,9 +182,7 @@ let setParams = (params, rowLen, column) => {
 
       // TODO: whats the correct value?
       column.modulationGain.gain.value = lfoAmt * 1000;
-      //modulationGain.gain.value = 1000;
 
-      //column.lfo.start(); // TODO: where to do this?
     } else {
       // disable LFO
       column.modulationGain.gain.value = 0;
@@ -197,7 +212,7 @@ let setNotes = (params, patterns, patternOrder, rowLen, patternLen, when, column
       q = 1 - params[21] / 255,
       dist = params[22] * 1e-5,
       drive = params[23] / 32,
-      panAmt = params[24] / 512,
+      panAmt = params[24] / 511,
       panFreq = 6.283184 * Math.pow(2, params[25] - 9) / rowLen,
       dlyAmt = params[26] / 255,
       dly = params[27] * rowLen;
@@ -306,6 +321,7 @@ soundbox.MusicGenerator = function() {
         column.osc2.start();
         //column.osc3.start(); // TODO: start/stop noise osc
         column.lfo.start();
+        column.panLFO.start();
       })
     );
 };
@@ -319,6 +335,11 @@ soundbox.MusicGenerator.prototype.play = function(song, when = 0) {
       column.lfo = audioCtx.createOscillator();
       column.lfo.connect(column.modulationGain);
       column.lfo.start();
+
+      column.panLFO.disconnect();
+      column.panLFO = audioCtx.createOscillator();
+      column.panLFO.connect(column.panAmt);
+      column.panLFO.start();
 
       // Set initial parameters for each column
       setParams(track.i, song.rowLen / 44100, column);
