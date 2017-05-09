@@ -224,11 +224,17 @@ let setNotes = (params, patterns, patternOrder, rowLen, patternLen, when, column
   // TODO: arpeggio
   //var o1t = getnotefreq(n + (arp & 15) + params[2] - 128);
   //var o2t = getnotefreq(n + (arp & 15) + params[6] - 128) * (1 + 0.0008 * params[7]);
+
+  // Program notes in reverse order and keep track of the next note.
+  // If next note is too close, don't program in sustain / release events
+  notes.reverse();
+  let nextNote;
+
   notes.forEach((note, index) => {
     if (!note) return;
 
     //let startTime = t + rowLen * index;
-    let startTime = when + rowLen * index;
+    let startTime = when + rowLen * (notes.length - index - 1);
     let osc1freq = 440 * Math.pow(2, (note + params[2] - 272) / 12);
     let osc2freq = 440 * Math.pow(2, (note + params[6] - 272 + 0.008 * params[7]) / 12);
     column.osc1.frequency.setValueAtTime(osc1freq, startTime);
@@ -260,13 +266,19 @@ let setNotes = (params, patterns, patternOrder, rowLen, patternLen, when, column
     column.osc2env.gain.linearRampToValueAtTime(o2vol, startTime + attack);
     column.osc3env.gain.linearRampToValueAtTime(noiseVol, startTime + attack);
     // sustain
-    column.osc1env.gain.setValueAtTime(o1vol, startTime + attack + sustain);
-    column.osc2env.gain.setValueAtTime(o2vol, startTime + attack + sustain);
-    column.osc3env.gain.setValueAtTime(noiseVol, startTime + attack + sustain);
+    if (!nextNote || nextNote > startTime + attack + sustain) {
+        column.osc1env.gain.setValueAtTime(o1vol, startTime + attack + sustain);
+        column.osc2env.gain.setValueAtTime(o2vol, startTime + attack + sustain);
+        column.osc3env.gain.setValueAtTime(noiseVol, startTime + attack + sustain);
+    }
     // release
-    column.osc1env.gain.linearRampToValueAtTime(0, startTime + attack + sustain + release);
-    column.osc2env.gain.linearRampToValueAtTime(0, startTime + attack + sustain + release);
-    column.osc3env.gain.linearRampToValueAtTime(0, startTime + attack + sustain + release);
+    if (!nextNote || nextNote > startTime + attack + sustain + release) {
+        column.osc1env.gain.linearRampToValueAtTime(0, startTime + attack + sustain + release);
+        column.osc2env.gain.linearRampToValueAtTime(0, startTime + attack + sustain + release);
+        column.osc3env.gain.linearRampToValueAtTime(0, startTime + attack + sustain + release);
+    }
+
+    nextNote = startTime;
   });
 };
 
