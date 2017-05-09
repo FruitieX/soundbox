@@ -296,7 +296,7 @@ soundbox.MusicGenerator = function() {
     ];
 
     this.mixer = audioCtx.createGain();
-    this.mixer.gain.value = 0.25;
+    this.mixer.gain.value = 0.4;
 
     // connect each column in each track to the mixer and start oscillators
     this.tracks.forEach(track =>
