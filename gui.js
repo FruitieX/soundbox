@@ -3877,6 +3877,12 @@ var CGUI = function()
     // Update the jammer rowLen (BPM) - requires that the jammer has been
     // started.
     mJammer.updateRowLen(mSong.rowLen);
+
+    var songData = gDemoSongs[3].data;
+    // Load the song
+
+    if (songData)
+      loadSongFromData(songData);
   };
 
 };
