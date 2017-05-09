@@ -144,7 +144,7 @@ let setParams = (params, rowLen, column) => {
       fxLFO = params[18],
       fxFilter = params[19],
       fxFreq = params[20] * 20,
-      q = Math.pow(2, params[21] / 63),
+      q = Math.pow(params[21] / 255, 2) * 10,
       dist = params[22] * 1e-5,
       drive = params[23] / 32,
       panAmt = params[24] / 255,
@@ -153,7 +153,7 @@ let setParams = (params, rowLen, column) => {
       dly = params[27] * rowLen;
 
     // master
-    column.out.gain.value = 1;
+    column.out.gain.value = drive;
     column.preFilter.gain.value = 1;
 
     // oscillators
@@ -175,6 +175,7 @@ let setParams = (params, rowLen, column) => {
     column.delay.delayTime.value = dly;
 
     // filter
+    console.log(q);
     column.biquadFilter.type = filters[fxFilter - 1];
     column.biquadFilter.frequency.value = fxFreq;
     column.biquadFilter.Q.value = q;
